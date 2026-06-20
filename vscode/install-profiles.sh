@@ -5,7 +5,7 @@ PROFILES=(ML Java WebDev Rust)
 
 for profile in "${PROFILES[@]}"; do
   code --profile "$profile" \
-    --import "$(dirname "$0")/profiles/${profile,,}.code-profile"
+    --import "$(dirname "$0")/profiles/$(echo "$profile" | tr '[:upper:]' '[:lower:]').code-profile"
 done
 
 while read -r ext; do
