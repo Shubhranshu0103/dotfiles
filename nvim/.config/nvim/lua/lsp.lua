@@ -4,8 +4,11 @@ require("mason-lspconfig").setup({
   automatic_installation = true,
 })
 
-local lspconfig = require("lspconfig")
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
+local capabilities = vim.tbl_deep_extend(
+  "force",
+  vim.lsp.protocol.make_client_capabilities(),
+  require("cmp_nvim_lsp").default_capabilities()
+)
 
 local on_attach = function(_, bufnr)
   local map = function(keys, func)
@@ -19,10 +22,11 @@ local on_attach = function(_, bufnr)
   map("<leader>f", function() vim.lsp.buf.format({ async = true }) end)
 end
 
-local servers = { "lua_ls", "pyright", "gopls", "rust_analyzer", "ts_ls" }
-for _, server in ipairs(servers) do
-  lspconfig[server].setup({
-    capabilities = capabilities,
-    on_attach = on_attach,
-  })
-end
+require("mason-lspconfig").setup_handlers({
+  function(server_name)
+    require("lspconfig")[server_name].setup({
+      capabilities = capabilities,
+      on_attach = on_attach,
+    })
+  end,
+})
