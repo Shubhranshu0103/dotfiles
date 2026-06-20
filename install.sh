@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-DOTFILES="$HOME/dotfiles"
+DOTFILES="$(cd "$(dirname "$0")" && pwd)"
 
 echo "🚀 Bootstrapping machine..."
 
@@ -10,18 +10,26 @@ if ! command -v brew &>/dev/null; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
+# Add Homebrew to PATH for the remainder of this script
+if [ -f /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -f /usr/local/bin/brew ]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
 # 2. Packages
-brew bundle --file="$DOTFILES/Brewfile"
+brew bundle --verbose --file="$DOTFILES/Brewfile"
 
 # 3. Stow all packages
 cd "$DOTFILES"
 stow --restow zsh tmux nvim git ghostty starship mise
 
-# 4. Tmux plugins
+# 4. Tmux plugins (stow must run first so ~/.tmux.conf is in place)
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 fi
-~/.tmux/plugins/tpm/scripts/install_plugins.sh
+TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" \
+  ~/.tmux/plugins/tpm/scripts/install_plugins.sh
 
 # 5. VS Code profiles and extensions
 if command -v code &>/dev/null; then

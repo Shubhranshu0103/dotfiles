@@ -48,9 +48,10 @@ check:
 # Adopt a loose file into a package: dots add ~/.somerc zsh
 add file package:
     #!/usr/bin/env bash
-    rel="${{file}#$HOME/}"
+    file="{{file}}"
+    rel="${file#$HOME/}"
     dest="$(pwd)/{{package}}/$rel"
     mkdir -p "$(dirname "$dest")"
-    mv "{{file}}" "$dest"
+    mv "$file" "$dest"
     stow --restow --target=$HOME {{package}}
     echo "✅ Adopted {{file}}"

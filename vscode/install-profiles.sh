@@ -1,15 +1,25 @@
 #!/usr/bin/env bash
 set -e
 
-PROFILES=(ML Java WebDev Rust)
-
-for profile in "${PROFILES[@]}"; do
-  code --profile "$profile" \
-    --import "$(dirname "$0")/profiles/${profile,,}.code-profile"
-done
-
-while read -r ext; do
-  for profile in "${PROFILES[@]}"; do
-    code --profile "$profile" --install-extension "$ext"
+install_extensions() {
+  local profile="$1"
+  shift
+  while read -r ext; do
+    code --profile "$profile" --install-extension "$ext" --force
+  done < "$(dirname "$0")/extensions-common.txt"
+  for ext in "$@"; do
+    code --profile "$profile" --install-extension "$ext" --force
   done
-done < "$(dirname "$0")/extensions-common.txt"
+}
+
+install_extensions "ML" \
+  ms-python.python ms-python.vscode-pylance ms-toolsai.jupyter
+
+install_extensions "Java" \
+  vscjava.vscode-java-pack vmware.vscode-spring-boot
+
+install_extensions "WebDev" \
+  dbaeumer.vscode-eslint esbenp.prettier-vscode bradlc.vscode-tailwindcss humao.rest-client ms-python.python ms-python.vscode-pylance
+
+install_extensions "Rust" \
+  rust-lang.rust-analyzer vadimcn.vscode-lldb
