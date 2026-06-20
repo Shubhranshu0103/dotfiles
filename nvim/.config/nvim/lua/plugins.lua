@@ -51,12 +51,16 @@ require("lazy").setup({
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    main = "nvim-treesitter.configs",
+    event = "BufReadPost",
     opts = {
       ensure_installed = { "lua", "python", "go", "rust", "javascript", "typescript", "bash", "json", "toml", "yaml" },
       highlight = { enable = true },
       indent = { enable = true },
     },
+    config = function(_, opts)
+      local ok, configs = pcall(require, "nvim-treesitter.configs")
+      if ok then configs.setup(opts) end
+    end,
   },
 
   -- LSP
