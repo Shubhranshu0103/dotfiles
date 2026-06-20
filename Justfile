@@ -37,6 +37,12 @@ edit:
 list:
     @echo "{{PACKAGES}}"
 
+# Remove all stow-managed symlinks from $HOME (does not delete repo files)
+nuke:
+    @echo "🗑️  Removing stow-managed symlinks..."
+    stow --delete --target=$HOME {{PACKAGES}}
+    @echo "✅ Done. Run 'just sync' to re-link."
+
 # Lint scripts and simulate stow — no changes made to system
 check:
     @echo "🔍 Running shellcheck..."
