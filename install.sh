@@ -24,11 +24,12 @@ brew bundle --verbose --file="$DOTFILES/Brewfile"
 cd "$DOTFILES"
 stow --restow zsh tmux nvim git ghostty starship mise
 
-# 4. Tmux plugins
+# 4. Tmux plugins (stow must run first so ~/.tmux.conf is in place)
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 fi
-~/.tmux/plugins/tpm/scripts/install_plugins.sh
+TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" \
+  ~/.tmux/plugins/tpm/scripts/install_plugins.sh
 
 # 5. VS Code profiles and extensions
 if command -v code &>/dev/null; then
