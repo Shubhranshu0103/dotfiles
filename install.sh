@@ -20,11 +20,16 @@ fi
 # 2. Packages
 brew bundle --verbose --file="$DOTFILES/Brewfile"
 
-# 3. Stow all packages
+# 3. Symlink dotfiles to ~/dotfiles for the dots alias
+if [ ! -e "$HOME/dotfiles" ]; then
+  ln -sf "$DOTFILES" "$HOME/dotfiles"
+fi
+
+# 4. Stow all packages
 cd "$DOTFILES"
 stow --restow zsh tmux nvim git ghostty starship mise
 
-# 4. Tmux plugins (stow must run first so ~/.tmux.conf is in place)
+# 5. Tmux plugins (stow must run first so ~/.tmux.conf is in place)
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 fi
