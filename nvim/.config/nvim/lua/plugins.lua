@@ -51,23 +51,22 @@ require("lazy").setup({
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    event = "BufReadPost",
     opts = {
       ensure_installed = { "lua", "python", "go", "rust", "javascript", "typescript", "bash", "json", "toml", "yaml" },
       highlight = { enable = true },
       indent = { enable = true },
     },
     config = function(_, opts)
-      require("nvim-treesitter.configs").setup(opts)
+      local ok, configs = pcall(require, "nvim-treesitter.configs")
+      if ok then configs.setup(opts) end
     end,
   },
 
   -- LSP
   {
-    "neovim/nvim-lspconfig",
-    dependencies = {
-      "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
-    },
+    "williamboman/mason.nvim",
+    dependencies = { "williamboman/mason-lspconfig.nvim", "hrsh7th/cmp-nvim-lsp" },
     config = function()
       require("lsp")
     end,

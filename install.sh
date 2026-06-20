@@ -29,33 +29,36 @@ fi
 cd "$DOTFILES"
 stow --restow zsh tmux nvim git ghostty starship mise
 
-# 5. Tmux plugins (stow must run first so ~/.tmux.conf is in place)
+# 5. Install mise runtimes (stow must run first so ~/.config/mise/config.toml is in place)
+mise install
+
+# 6. Tmux plugins (stow must run first so ~/.tmux.conf is in place)
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 fi
 TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" \
   ~/.tmux/plugins/tpm/scripts/install_plugins.sh
 
-# 5. VS Code profiles and extensions
+# 7. VS Code profiles and extensions
 if command -v code &>/dev/null; then
   bash "$DOTFILES/vscode/install-profiles.sh"
 fi
 
-# 6. VS Code settings symlink
+# 8. VS Code settings symlink
 VSCODE_DIR="$HOME/Library/Application Support/Code/User"
 mkdir -p "$VSCODE_DIR"
 ln -sf "$DOTFILES/vscode/settings.json" "$VSCODE_DIR/settings.json"
 ln -sf "$DOTFILES/vscode/keybindings.json" "$VSCODE_DIR/keybindings.json"
 
-# 7. macOS defaults
+# 9. macOS defaults
 bash "$DOTFILES/macos/defaults.sh"
 
-# 8. Claude Code
+# 10. Claude Code
 if ! command -v claude &>/dev/null; then
   curl -fsSL https://claude.ai/install.sh | bash
 fi
 
-# 9. Default shell
+# 11. Default shell
 if [ "$SHELL" != "$(which zsh)" ]; then
   chsh -s "$(which zsh)"
 fi

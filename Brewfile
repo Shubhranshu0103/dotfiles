@@ -12,6 +12,7 @@ brew "eza"
 brew "jq"
 brew "htop"
 brew "stow"
+brew "tree"
 brew "shellcheck"
 brew "just"
 brew "mise"
@@ -29,7 +30,6 @@ brew "gh"
 brew "lazygit"
 
 # Fonts
-tap "homebrew/cask-fonts"
 cask "font-jetbrains-mono-nerd-font"
 
 # GUI Apps
