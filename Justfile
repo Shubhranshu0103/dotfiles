@@ -37,6 +37,14 @@ edit:
 list:
     @echo "{{PACKAGES}}"
 
+# Remove all stow-managed symlinks from $HOME (does not delete repo files)
+nuke:
+    #!/usr/bin/env bash
+    echo "🗑️  Removing stow-managed symlinks..."
+    rm -rf ~/.config/nvim ~/.config/ghostty ~/.config/starship.toml ~/.config/mise
+    rm -f ~/.zshrc ~/.zprofile ~/.tmux.conf ~/.gitconfig ~/.gitignore_global
+    echo "✅ Done. Run 'just sync' to re-link."
+
 # Lint scripts and simulate stow — no changes made to system
 check:
     @echo "🔍 Running shellcheck..."
