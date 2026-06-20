@@ -18,7 +18,7 @@ elif [ -f /usr/local/bin/brew ]; then
 fi
 
 # 2. Packages
-brew bundle --file="$DOTFILES/Brewfile"
+brew bundle --verbose --file="$DOTFILES/Brewfile"
 
 # 3. Stow all packages
 cd "$DOTFILES"
