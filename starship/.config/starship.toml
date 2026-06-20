@@ -1,0 +1,45 @@
+format = """
+$directory$git_branch$git_status$cmd_duration
+$character"""
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+
+[git_branch]
+symbol = " "
+format = "[$symbol$branch]($style) "
+style = "bold mauve"
+
+[git_status]
+ahead = "⇡${count}"
+behind = "⇣${count}"
+modified = "!${count}"
+untracked = "?${count}"
+staged = "+${count}"
+
+[cmd_duration]
+min_time = 2_000
+format = "[ $duration]($style) "
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+[python]
+detect_files = ["requirements.txt", "pyproject.toml", ".python-version"]
+
+[rust]
+detect_files = ["Cargo.toml"]
+
+[nodejs]
+detect_files = ["package.json"]
+
+[golang]
+detect_files = ["go.mod"]
+
+[package]
+disabled = true
+
+[aws]
+disabled = true

@@ -1,0 +1,4 @@
+{
+  "name": "WebDev",
+  "extensions": "dbaeumer.vscode-eslint esbenp.prettier-vscode bradlc.vscode-tailwindcss humao.rest-client ms-python.python ms-python.vscode-pylance"
+}

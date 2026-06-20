@@ -1,0 +1,7 @@
+[tools]
+node = "22"
+python = "3.12"
+go = "1.23"
+
+# Rust is managed by rustup for richer toolchain control
+# mise just ensures rustup is present via Brewfile
