@@ -35,3 +35,6 @@ opt.undofile = true
 
 -- Update time (for CursorHold, gitgutter)
 opt.updatetime = 250
+
+-- Ensure mise-managed runtimes are available to LSP servers
+vim.env.PATH = vim.env.HOME .. "/.local/share/mise/shims:" .. vim.env.PATH

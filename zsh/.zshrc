@@ -9,7 +9,7 @@ eval "$(mise activate zsh)"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # PATH
-export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 
 # Dotfiles task runner — run from anywhere
 alias dots="just --justfile ~/dotfiles/Justfile --working-directory ~/dotfiles"
@@ -42,6 +42,23 @@ alias ta="tmux attach -t"
 alias tn="tmux new -s"
 alias tl="tmux list-sessions"
 alias tk="tmux kill-session -t"
+
+# Shell reload
+alias reload="source ~/.zshrc"
+
+# Tree — t [depth] [flags] in any order
+t() {
+  local depth=2
+  local args=()
+  for arg in "$@"; do
+    if [[ "$arg" =~ ^[0-9]+$ ]]; then
+      depth="$arg"
+    else
+      args+=("$arg")
+    fi
+  done
+  tree -L "$depth" "${args[@]}"
+}
 
 # Better defaults
 alias ls="eza --icons"
