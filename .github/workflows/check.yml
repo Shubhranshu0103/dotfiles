@@ -18,5 +18,8 @@ jobs:
       - name: Shellcheck
         run: shellcheck install.sh macos/defaults.sh vscode/install-profiles.sh
 
+      - name: Remove runner-created dotfiles that conflict with stow
+        run: rm -f ~/.gitconfig ~/.zshrc ~/.zprofile
+
       - name: Stow simulate
         run: stow --simulate --restow --target=$HOME zsh tmux nvim git ghostty starship mise
