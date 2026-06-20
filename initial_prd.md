@@ -660,7 +660,13 @@ Catppuccin Mocha applied uniformly across the stack:
 
 ---
 
-## 13. Open Questions
+## 13. TODO
+
+- [ ] **Hash-based incremental sync** — track a hash of each stow package and each install step (Brewfile, macOS defaults, VS Code profiles, etc.). On `just sync` or `install.sh` re-runs, skip steps whose inputs haven't changed since last run. Similar to how Make uses file mtimes, but content-hash based so renames and moves are also detected. Store hashes in a `.dotfiles-state` file at repo root (gitignored).
+
+---
+
+## 14. Open Questions
 
 - [ ] Which Git aliases to carry over from work Mac? (audit against GitAlias repo)
 - [ ] Neovim plugin manager — lazy.nvim is the standard choice for hand-rolled configs
