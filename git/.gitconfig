@@ -1,0 +1,28 @@
+[user]
+  name = Shubhranshu Singh
+  email = shubhranshusingh.work@gmail.com
+
+[core]
+  editor = nvim
+  excludesfile = ~/.gitignore_global
+  autocrlf = input
+
+[pull]
+  rebase = true
+
+[push]
+  default = current
+
+[alias]
+  # Log
+  lg = log --oneline --graph --decorate --all
+  lp = log --pretty=format:'%C(yellow)%h %C(reset)%s %C(dim)%an, %ar'
+
+  # Workflow
+  undo = reset HEAD~1 --mixed
+  wip = !git add -A && git commit -m 'wip'
+  unwip = !git log -n 1 | grep -q 'wip' && git reset HEAD~1
+
+  # Branch
+  br = branch --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative))%(color:reset)'
+  cleanup = !git branch --merged | grep -v '\\*\\|main\\|master\\|develop' | xargs -n 1 git branch -d

@@ -1,0 +1,5 @@
+vscodevim.vim
+catppuccin.catppuccin-vsc
+eamodio.gitlens
+usernamehw.errorlens
+tamasfe.even-better-toml
