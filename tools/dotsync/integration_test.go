@@ -128,3 +128,68 @@ func TestRecordAppendsSnapshot(t *testing.T) {
 		t.Error("expected at least one snapshot after record")
 	}
 }
+
+func TestRollback(t *testing.T) {
+	dir := setupTestRepo(t)
+
+	// Record initial state
+	if err := cmdRecord(dir, "brew"); err != nil {
+		t.Fatal(err)
+	}
+
+	// Get the commit that was recorded
+	state, _ := LoadState(dir)
+	commit := state.Meta.CurrentCommit
+
+	// Corrupt the current state to simulate drift
+	state.Steps["brew"].Hash = "wronghash"
+	SaveState(dir, state)
+
+	// Rollback should restore
+	if err := cmdRollback(dir, commit); err != nil {
+		t.Fatal(err)
+	}
+
+	restored, _ := LoadState(dir)
+	step := restored.Steps["brew"]
+	if step == nil {
+		t.Fatal("expected brew step after rollback")
+	}
+	if step.Hash == "wronghash" {
+		t.Error("rollback did not restore hash")
+	}
+}
+
+func TestRollbackUnknownCommit(t *testing.T) {
+	dir := setupTestRepo(t)
+	err := cmdRollback(dir, "nonexistent")
+	if err == nil {
+		t.Error("expected error for unknown commit")
+	}
+}
+
+func TestGCRemovesOrphans(t *testing.T) {
+	dir := setupTestRepo(t)
+
+	// Manually write a state entry for a step not in dotsync.toml
+	state := &DotfilesState{
+		Meta:  StateMeta{CurrentCommit: "abc", DotsyncVersion: DotsyncVersion},
+		Steps: map[string]*StepState{
+			"brew":    {Hash: "h1", Status: "ok", Files: map[string]string{}},
+			"orphan":  {Hash: "h2", Status: "ok", Files: map[string]string{}},
+		},
+	}
+	SaveState(dir, state)
+
+	if err := cmdGC(dir); err != nil {
+		t.Fatal(err)
+	}
+
+	after, _ := LoadState(dir)
+	if _, ok := after.Steps["orphan"]; ok {
+		t.Error("expected orphan to be removed")
+	}
+	if _, ok := after.Steps["brew"]; !ok {
+		t.Error("expected brew to remain")
+	}
+}

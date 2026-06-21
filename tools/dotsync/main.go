@@ -112,11 +112,3 @@ func currentGitCommit(repoRoot string) (string, error) {
 func cmdStatus(repoRoot string) error {
 	return fmt.Errorf("not implemented")
 }
-
-func cmdRollback(repoRoot, commit string) error {
-	return fmt.Errorf("not implemented")
-}
-
-func cmdGC(repoRoot string) error {
-	return fmt.Errorf("not implemented")
-}
