@@ -108,9 +108,6 @@ func currentGitCommit(repoRoot string) (string, error) {
 }
 
 // Stub implementations for subcommands (to be implemented in later tasks)
-func cmdRecord(repoRoot, step string) error {
-	return fmt.Errorf("not implemented")
-}
 
 func cmdStatus(repoRoot string) error {
 	return fmt.Errorf("not implemented")

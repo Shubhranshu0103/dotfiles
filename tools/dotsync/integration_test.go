@@ -74,3 +74,57 @@ func TestCheckStale(t *testing.T) {
 		t.Error("expected stale error")
 	}
 }
+
+func TestRecordCreatesStateEntry(t *testing.T) {
+	dir := setupTestRepo(t)
+
+	if err := cmdRecord(dir, "brew"); err != nil {
+		t.Fatal(err)
+	}
+
+	state, err := LoadState(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	step, ok := state.Steps["brew"]
+	if !ok {
+		t.Fatal("expected brew entry in state")
+	}
+	if step.Hash == "" {
+		t.Error("expected non-empty hash")
+	}
+	if step.Status != "ok" {
+		t.Errorf("expected status ok, got %q", step.Status)
+	}
+	if _, ok := step.Files["Brewfile"]; !ok {
+		t.Error("expected Brewfile in file map")
+	}
+}
+
+func TestRecordThenCheckUpToDate(t *testing.T) {
+	dir := setupTestRepo(t)
+
+	if err := cmdRecord(dir, "brew"); err != nil {
+		t.Fatal(err)
+	}
+	// Immediately after recording, check should return up-to-date
+	if err := cmdCheck(dir, "brew"); err != nil {
+		t.Errorf("expected up-to-date after record, got: %v", err)
+	}
+}
+
+func TestRecordAppendsSnapshot(t *testing.T) {
+	dir := setupTestRepo(t)
+
+	if err := cmdRecord(dir, "brew"); err != nil {
+		t.Fatal(err)
+	}
+
+	snaps, err := LoadSnapshots(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(snaps) == 0 {
+		t.Error("expected at least one snapshot after record")
+	}
+}
