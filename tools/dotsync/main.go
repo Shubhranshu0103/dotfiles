@@ -27,7 +27,11 @@ func main() {
 			fmt.Fprintln(os.Stderr, "usage: dotsync check <step>")
 			os.Exit(2)
 		}
-		if err := cmdCheck(repoRoot, args[1]); err != nil {
+		err := cmdCheck(repoRoot, args[1])
+		if err == errStale {
+			os.Exit(1)
+		}
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "dotsync check: %v\n", err)
 			os.Exit(2)
 		}
@@ -104,10 +108,6 @@ func currentGitCommit(repoRoot string) (string, error) {
 }
 
 // Stub implementations for subcommands (to be implemented in later tasks)
-func cmdCheck(repoRoot, step string) error {
-	return fmt.Errorf("not implemented")
-}
-
 func cmdRecord(repoRoot, step string) error {
 	return fmt.Errorf("not implemented")
 }
