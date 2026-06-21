@@ -30,7 +30,7 @@ fi
 # 4. Stow — per-package so only changed packages restow
 for pkg in zsh tmux nvim git ghostty starship mise; do
   if ! "$DOTSYNC" check "stow_${pkg}"; then
-    stow --restow --target="$HOME" "$pkg"
+    stow --dir "$DOTFILES" --restow --target="$HOME" "$pkg"
     "$DOTSYNC" record "stow_${pkg}"
   fi
 done
@@ -57,14 +57,11 @@ if command -v code &>/dev/null && ! "$DOTSYNC" check vscode_profiles; then
   "$DOTSYNC" record vscode_profiles
 fi
 
-# 8. VS Code settings symlinks
-if ! "$DOTSYNC" check vscode_settings; then
-  VSCODE_DIR="$HOME/Library/Application Support/Code/User"
-  mkdir -p "$VSCODE_DIR"
-  ln -sf "$DOTFILES/vscode/settings.json" "$VSCODE_DIR/settings.json"
-  ln -sf "$DOTFILES/vscode/keybindings.json" "$VSCODE_DIR/keybindings.json"
-  "$DOTSYNC" record vscode_settings
-fi
+# 8. VS Code settings symlinks — idempotent, always safe to run
+VSCODE_DIR="$HOME/Library/Application Support/Code/User"
+mkdir -p "$VSCODE_DIR"
+ln -sf "$DOTFILES/vscode/settings.json" "$VSCODE_DIR/settings.json"
+ln -sf "$DOTFILES/vscode/keybindings.json" "$VSCODE_DIR/keybindings.json"
 
 # 9. macOS defaults
 if ! "$DOTSYNC" check macos; then

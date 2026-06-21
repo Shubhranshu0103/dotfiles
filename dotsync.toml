@@ -47,9 +47,5 @@ inputs      = ["vscode/profiles/", "vscode/extensions-common.txt"]
 drift_check = "vscode"
 
 [[steps]]
-name   = "vscode_settings"
-inputs = ["vscode/settings.json", "vscode/keybindings.json"]
-
-[[steps]]
 name   = "macos"
 inputs = ["macos/defaults.sh"]
