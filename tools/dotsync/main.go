@@ -107,8 +107,3 @@ func currentGitCommit(repoRoot string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
-// Stub implementations for subcommands (to be implemented in later tasks)
-
-func cmdStatus(repoRoot string) error {
-	return fmt.Errorf("not implemented")
-}
