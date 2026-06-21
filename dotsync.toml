@@ -1,0 +1,51 @@
+# dotsync.toml — defines what dotsync tracks
+# Add a new entry here + a guard in install.sh to onboard a new step.
+
+[[steps]]
+name   = "brew"
+inputs = ["Brewfile"]
+
+[[steps]]
+name   = "stow_zsh"
+inputs = ["zsh/"]
+
+[[steps]]
+name   = "stow_tmux"
+inputs = ["tmux/"]
+
+[[steps]]
+name   = "stow_nvim"
+inputs = ["nvim/"]
+
+[[steps]]
+name   = "stow_git"
+inputs = ["git/"]
+
+[[steps]]
+name   = "stow_ghostty"
+inputs = ["ghostty/"]
+
+[[steps]]
+name   = "stow_starship"
+inputs = ["starship/"]
+
+[[steps]]
+name   = "stow_mise"
+inputs = ["mise/"]
+
+[[steps]]
+name        = "mise_runtimes"
+inputs      = ["mise/.config/mise/config.toml"]
+
+[[steps]]
+name   = "tpm"
+inputs = ["tmux/.tmux.conf"]
+
+[[steps]]
+name        = "vscode_profiles"
+inputs      = ["vscode/profiles/", "vscode/extensions-common.txt"]
+drift_check = "vscode"
+
+[[steps]]
+name   = "macos"
+inputs = ["macos/defaults.sh"]

@@ -2,15 +2,14 @@
 set -e
 
 DOTFILES="$(cd "$(dirname "$0")" && pwd)"
+DOTSYNC="$DOTFILES/bin/dotsync"
 
 echo "🚀 Bootstrapping machine..."
 
-# 1. Homebrew
+# 1. Homebrew — self-guarded
 if ! command -v brew &>/dev/null; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
-
-# Add Homebrew to PATH for the remainder of this script
 if [ -f /opt/homebrew/bin/brew ]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 elif [ -f /usr/local/bin/brew ]; then
@@ -18,47 +17,64 @@ elif [ -f /usr/local/bin/brew ]; then
 fi
 
 # 2. Packages
-brew bundle --verbose --file="$DOTFILES/Brewfile"
+if ! "$DOTSYNC" check brew; then
+  brew bundle --verbose --file="$DOTFILES/Brewfile"
+  "$DOTSYNC" record brew
+fi
 
-# 3. Symlink dotfiles to ~/dotfiles for the dots alias
+# 3. Symlink ~/dotfiles — idempotent
 if [ ! -e "$HOME/dotfiles" ]; then
   ln -sf "$DOTFILES" "$HOME/dotfiles"
 fi
 
-# 4. Stow all packages
-cd "$DOTFILES"
-stow --restow zsh tmux nvim git ghostty starship mise
+# 4. Stow — per-package so only changed packages restow
+for pkg in zsh tmux nvim git ghostty starship mise; do
+  if ! "$DOTSYNC" check "stow_${pkg}"; then
+    stow --dir "$DOTFILES" --restow --target="$HOME" "$pkg"
+    "$DOTSYNC" record "stow_${pkg}"
+  fi
+done
 
-# 5. Install mise runtimes (stow must run first so ~/.config/mise/config.toml is in place)
-mise install
+# 5. Mise runtimes
+if ! "$DOTSYNC" check mise_runtimes; then
+  mise install
+  "$DOTSYNC" record mise_runtimes
+fi
 
-# 6. Tmux plugins (stow must run first so ~/.tmux.conf is in place)
+# 6. TPM — clone is self-guarded; plugins hashed
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 fi
-TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" \
-  ~/.tmux/plugins/tpm/scripts/install_plugins.sh
-
-# 7. VS Code profiles and extensions
-if command -v code &>/dev/null; then
-  bash "$DOTFILES/vscode/install-profiles.sh"
+if ! "$DOTSYNC" check tpm; then
+  TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" \
+    ~/.tmux/plugins/tpm/scripts/install_plugins.sh
+  "$DOTSYNC" record tpm
 fi
 
-# 8. VS Code settings symlink
+# 7. VS Code profiles
+if command -v code &>/dev/null && ! "$DOTSYNC" check vscode_profiles; then
+  bash "$DOTFILES/vscode/install-profiles.sh"
+  "$DOTSYNC" record vscode_profiles
+fi
+
+# 8. VS Code settings symlinks — idempotent, always safe to run
 VSCODE_DIR="$HOME/Library/Application Support/Code/User"
 mkdir -p "$VSCODE_DIR"
 ln -sf "$DOTFILES/vscode/settings.json" "$VSCODE_DIR/settings.json"
 ln -sf "$DOTFILES/vscode/keybindings.json" "$VSCODE_DIR/keybindings.json"
 
 # 9. macOS defaults
-bash "$DOTFILES/macos/defaults.sh"
+if ! "$DOTSYNC" check macos; then
+  bash "$DOTFILES/macos/defaults.sh"
+  "$DOTSYNC" record macos
+fi
 
-# 10. Claude Code
+# 10. Claude Code — self-guarded
 if ! command -v claude &>/dev/null; then
   curl -fsSL https://claude.ai/install.sh | bash
 fi
 
-# 11. Default shell
+# 11. Default shell — self-guarded
 if [ "$SHELL" != "$(which zsh)" ]; then
   chsh -s "$(which zsh)"
 fi
