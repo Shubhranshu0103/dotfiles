@@ -1,2 +1,5 @@
 .claude/
 tools/dotsync/dotsync
+.dotfiles-state
+.dotfiles-snapshots
+!bin/dotsync

@@ -4,11 +4,22 @@ PACKAGES := "zsh tmux nvim git ghostty starship mise"
 default:
     @just --list
 
-# Restow all packages — apply repo changes to system
+# Build the dotsync binary (run after editing tools/dotsync/)
+build-dotsync:
+    cd tools/dotsync && GOOS=darwin GOARCH=arm64 go build -o ../../bin/dotsync .
+    @echo "✅ bin/dotsync built"
+
+# Restow changed packages only
 sync:
-    @echo "🔄 Syncing..."
-    stow --restow --target=$HOME {{PACKAGES}}
-    @echo "✅ Done"
+    #!/usr/bin/env bash
+    set -e
+    for pkg in {{PACKAGES}}; do
+      if ! ./bin/dotsync check "stow_${pkg}"; then
+        stow --restow --target=$HOME "$pkg"
+        ./bin/dotsync record "stow_${pkg}"
+      fi
+    done
+    @echo "✅ Sync done"
 
 # Pull remote + sync + brew bundle
 update:
@@ -25,8 +36,29 @@ push message:
     git push origin main
     @echo "✅ Pushed"
 
-# Git status
+# Show step status and VS Code drift
 status:
+    ./bin/dotsync status
+
+# Rollback state to a previous commit snapshot
+rollback commit:
+    ./bin/dotsync rollback {{commit}}
+
+# Remove orphaned state entries
+gc:
+    ./bin/dotsync gc
+
+# Export current VS Code profiles back to repo (run after UI changes)
+vscode-export:
+    #!/usr/bin/env bash
+    for profile in ML Java WebDev Rust; do
+      code --profile "$profile" \
+        --export-profile "$(pwd)/vscode/profiles/${profile,,}.code-profile"
+    done
+    @echo "✅ Profiles exported — review with git diff, then dots push"
+
+# Git status
+status-git:
     git status
 
 # Open dotfiles in $EDITOR
@@ -37,7 +69,7 @@ edit:
 list:
     @echo "{{PACKAGES}}"
 
-# Remove all stow-managed symlinks from $HOME (does not delete repo files)
+# Remove all stow-managed symlinks from $HOME
 nuke:
     @echo "🗑️  Removing stow-managed symlinks..."
     stow --delete --target=$HOME {{PACKAGES}}
