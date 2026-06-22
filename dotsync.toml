@@ -42,9 +42,8 @@ name   = "tpm"
 inputs = ["tmux/.tmux.conf"]
 
 [[steps]]
-name        = "vscode_profiles"
-inputs      = ["vscode/profiles/", "vscode/extensions-common.txt"]
-drift_check = "vscode"
+name   = "vscode_profiles"
+inputs = ["vscode/profiles/", "vscode/extensions-common.txt"]
 
 [[steps]]
 name   = "macos"

@@ -10,9 +10,8 @@ import (
 const configFileName = "dotsync.toml"
 
 type StepDef struct {
-	Name       string   `toml:"name"`
-	Inputs     []string `toml:"inputs"`
-	DriftCheck string   `toml:"drift_check"`
+	Name   string   `toml:"name"`
+	Inputs []string `toml:"inputs"`
 }
 
 type DotsyncConfig struct {
