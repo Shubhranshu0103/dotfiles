@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -87,6 +88,17 @@ func cmdStatus(repoRoot string) error {
 	return nil
 }
 
+// vsCodeWindowCount returns the number of open VS Code windows via AppleScript.
+func vsCodeWindowCount() int {
+	out, err := exec.Command("osascript", "-e",
+		`tell application "Code" to if it is running then return count of windows`).Output()
+	if err != nil {
+		return 0
+	}
+	n, _ := strconv.Atoi(strings.TrimSpace(string(out)))
+	return n
+}
+
 // checkVSCodeDrift exports each VS Code profile to a temp file and compares
 // against the committed .code-profile. Returns a description if drifted, "" if clean.
 func checkVSCodeDrift(repoRoot string, step StepDef) string {
@@ -94,11 +106,16 @@ func checkVSCodeDrift(repoRoot string, step StepDef) string {
 		return "" // VS Code CLI not available — skip drift check gracefully
 	}
 
-	// If we end up launching VS Code (it wasn't already running), quit it when done.
 	wasRunning := exec.Command("pgrep", "-x", "Code").Run() == nil
+	windowsBefore := vsCodeWindowCount()
 	defer func() {
 		if !wasRunning {
 			exec.Command("osascript", "-e", `quit app "Code"`).Run()
+			return
+		}
+		// Close any extra windows the export opened, front-to-back.
+		for extra := vsCodeWindowCount() - windowsBefore; extra > 0; extra-- {
+			exec.Command("osascript", "-e", `tell application "Code" to close window 1`).Run()
 		}
 	}()
 
