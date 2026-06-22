@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
-	"strconv"
+	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -88,92 +88,99 @@ func cmdStatus(repoRoot string) error {
 	return nil
 }
 
-// vsCodeWindowCount returns the number of open VS Code windows via AppleScript.
-func vsCodeWindowCount() int {
-	out, err := exec.Command("osascript", "-e",
-		`tell application "Code" to if it is running then return count of windows`).Output()
-	if err != nil {
-		return 0
-	}
-	n, _ := strconv.Atoi(strings.TrimSpace(string(out)))
-	return n
-}
-
-// checkVSCodeDrift exports each VS Code profile to a temp file and compares
-// against the committed .code-profile. Returns a description if drifted, "" if clean.
+// checkVSCodeDrift reads VS Code's internal storage directly (no CLI invocation)
+// to compare live extension lists against committed .code-profile files.
+// Returns a description if drifted, "" if clean.
 func checkVSCodeDrift(repoRoot string, step StepDef) string {
-	if _, err := exec.LookPath("code"); err != nil {
-		return "" // VS Code CLI not available — skip drift check gracefully
+	home := os.Getenv("HOME")
+	vsCodeBase := filepath.Join(home, "Library/Application Support/Code/User")
+
+	// Read profile name→location ID mapping from VS Code's global storage.
+	storageData, err := os.ReadFile(filepath.Join(vsCodeBase, "globalStorage/storage.json"))
+	if err != nil {
+		return "" // VS Code not installed or never launched
 	}
 
-	wasRunning := exec.Command("pgrep", "-x", "Code").Run() == nil
-	windowsBefore := vsCodeWindowCount()
-	defer func() {
-		if !wasRunning {
-			exec.Command("osascript", "-e", `quit app "Code"`).Run()
-			return
-		}
-		// Close any extra windows the export opened, front-to-back.
-		for extra := vsCodeWindowCount() - windowsBefore; extra > 0; extra-- {
-			exec.Command("osascript", "-e", `tell application "Code" to close window 1`).Run()
-		}
-	}()
+	var storage map[string]json.RawMessage
+	if err := json.Unmarshal(storageData, &storage); err != nil {
+		return ""
+	}
+
+	var profileDefs []struct {
+		Location string `json:"location"`
+		Name     string `json:"name"`
+	}
+	if err := json.Unmarshal(storage["userDataProfiles"], &profileDefs); err != nil {
+		return ""
+	}
+
+	locationByName := make(map[string]string, len(profileDefs))
+	for _, p := range profileDefs {
+		locationByName[strings.ToLower(p.Name)] = p.Location
+	}
 
 	profiles := []string{"ML", "Java", "WebDev", "Rust"}
 	for _, profile := range profiles {
-		tmp, err := os.CreateTemp("", fmt.Sprintf("dotsync-%s-*.code-profile", profile))
-		if err != nil {
-			continue
-		}
-		tmpName := tmp.Name()
-		tmp.Close()
-
-		cmd := exec.Command("code", "--profile", profile, "--export-profile", tmpName)
-		if err := cmd.Run(); err != nil {
-			os.Remove(tmpName)
-			continue // profile may not exist yet — skip
+		location, ok := locationByName[strings.ToLower(profile)]
+		if !ok {
+			continue // profile not created in VS Code yet
 		}
 
-		repoFile := fmt.Sprintf("%s/vscode/profiles/%s.code-profile", repoRoot, strings.ToLower(profile))
-		repoData, err := os.ReadFile(repoFile)
-		if err != nil {
-			os.Remove(tmpName)
-			continue
-		}
-		liveData, err := os.ReadFile(tmpName)
-		os.Remove(tmpName)
+		// Read live extensions from internal storage.
+		extData, err := os.ReadFile(filepath.Join(vsCodeBase, "profiles", location, "extensions.json"))
 		if err != nil {
 			continue
 		}
 
-		if !profilesEqual(repoData, liveData) {
+		var extList []struct {
+			Identifier struct {
+				ID string `json:"id"`
+			} `json:"identifier"`
+		}
+		if err := json.Unmarshal(extData, &extList); err != nil {
+			continue
+		}
+
+		liveIDs := make([]string, 0, len(extList))
+		for _, e := range extList {
+			liveIDs = append(liveIDs, strings.ToLower(e.Identifier.ID))
+		}
+		sort.Strings(liveIDs)
+
+		// Read committed profile (extensions stored as space-separated string).
+		repoData, err := os.ReadFile(filepath.Join(repoRoot, "vscode/profiles", strings.ToLower(profile)+".code-profile"))
+		if err != nil {
+			continue
+		}
+
+		var repoProfile struct {
+			Extensions string `json:"extensions"`
+		}
+		if err := json.Unmarshal(repoData, &repoProfile); err != nil {
+			continue
+		}
+
+		repoIDs := make([]string, 0)
+		for _, id := range strings.Fields(repoProfile.Extensions) {
+			repoIDs = append(repoIDs, strings.ToLower(id))
+		}
+		sort.Strings(repoIDs)
+
+		if !stringSlicesEqual(liveIDs, repoIDs) {
 			return fmt.Sprintf("%s.code-profile has UI changes", strings.ToLower(profile))
 		}
 	}
 	return ""
 }
 
-// profilesEqual compares the settings and extensions fields of two .code-profile JSON blobs.
-// Ignores metadata fields like version and timestamps.
-func profilesEqual(a, b []byte) bool {
-	extract := func(data []byte) map[string]any {
-		var full map[string]any
-		if err := json.Unmarshal(data, &full); err != nil {
-			return nil
-		}
-		return map[string]any{
-			"settings":   full["settings"],
-			"extensions": full["extensions"],
+func stringSlicesEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
 		}
 	}
-
-	aMap := extract(a)
-	bMap := extract(b)
-	if aMap == nil || bMap == nil {
-		return true // can't compare — assume clean
-	}
-
-	aJSON, _ := json.Marshal(aMap)
-	bJSON, _ := json.Marshal(bMap)
-	return string(aJSON) == string(bJSON)
+	return true
 }
