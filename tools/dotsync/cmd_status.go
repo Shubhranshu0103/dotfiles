@@ -94,26 +94,37 @@ func checkVSCodeDrift(repoRoot string, step StepDef) string {
 		return "" // VS Code CLI not available — skip drift check gracefully
 	}
 
+	// If we end up launching VS Code (it wasn't already running), quit it when done.
+	wasRunning := exec.Command("pgrep", "-x", "Code").Run() == nil
+	defer func() {
+		if !wasRunning {
+			exec.Command("osascript", "-e", `quit app "Code"`).Run()
+		}
+	}()
+
 	profiles := []string{"ML", "Java", "WebDev", "Rust"}
 	for _, profile := range profiles {
 		tmp, err := os.CreateTemp("", fmt.Sprintf("dotsync-%s-*.code-profile", profile))
 		if err != nil {
 			continue
 		}
+		tmpName := tmp.Name()
 		tmp.Close()
-		defer os.Remove(tmp.Name())
 
-		cmd := exec.Command("code", "--profile", profile, "--export-profile", tmp.Name())
+		cmd := exec.Command("code", "--profile", profile, "--export-profile", tmpName)
 		if err := cmd.Run(); err != nil {
+			os.Remove(tmpName)
 			continue // profile may not exist yet — skip
 		}
 
 		repoFile := fmt.Sprintf("%s/vscode/profiles/%s.code-profile", repoRoot, strings.ToLower(profile))
 		repoData, err := os.ReadFile(repoFile)
 		if err != nil {
+			os.Remove(tmpName)
 			continue
 		}
-		liveData, err := os.ReadFile(tmp.Name())
+		liveData, err := os.ReadFile(tmpName)
+		os.Remove(tmpName)
 		if err != nil {
 			continue
 		}
