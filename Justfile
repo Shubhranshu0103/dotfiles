@@ -19,7 +19,7 @@ sync:
         ./bin/dotsync record "stow_${pkg}"
       fi
     done
-    @echo "✅ Sync done"
+    echo "✅ Sync done"
 
 # Pull remote + sync + brew bundle
 update:
@@ -55,7 +55,7 @@ vscode-export:
       code --profile "$profile" \
         --export-profile "$(pwd)/vscode/profiles/${profile,,}.code-profile"
     done
-    @echo "✅ Profiles exported — review with git diff, then dots push"
+    echo "✅ Profiles exported — review with git diff, then dots push"
 
 # Git status
 status-git:
