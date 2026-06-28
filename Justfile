@@ -79,6 +79,7 @@ vscode-export:
       printf '{"name":"%s","extensions":"%s"}\n' "$profile" "$extensions" > "vscode/profiles/${lower}.code-profile"
       echo "✓ $profile"
     done
+    ./bin/dotsync record vscode_profiles
     echo "✅ Profiles exported — review with git diff, then dots push"
 
 # Git status
