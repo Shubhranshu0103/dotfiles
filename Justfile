@@ -62,7 +62,7 @@ vscode-export:
     #!/usr/bin/env bash
     for profile in ML Java WebDev Rust; do
       code --profile "$profile" \
-        --export-profile "$(pwd)/vscode/profiles/${profile,,}.code-profile"
+        --export-profile "$(pwd)/vscode/profiles/$(echo "$profile" | tr '[:upper:]' '[:lower:]').code-profile"
     done
     echo "✅ Profiles exported — review with git diff, then dots push"
 
