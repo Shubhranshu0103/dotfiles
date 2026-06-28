@@ -45,6 +45,9 @@ alias tl="tmux list-sessions"
 alias tk="tmux kill-session -t"
 alias txd="tmux a -t default"
 
+# Other aliases
+alias lzg="lazygit"
+
 # Shell reload
 alias reload="source ~/.zshrc"
 

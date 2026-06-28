@@ -37,5 +37,6 @@
       "vscodevim.vim": 1
     },
     "vim.smartRelativeLine": true,
-    "editor.lineNumbers": "relative"
+    "editor.lineNumbers": "relative",
+    "editor.fontSize": 16
 }
