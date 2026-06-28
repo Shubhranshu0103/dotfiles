@@ -43,6 +43,7 @@ alias ta="tmux attach -t"
 alias tn="tmux new -s"
 alias tl="tmux list-sessions"
 alias tk="tmux kill-session -t"
+alias txd="tmux a -t default"
 
 # Shell reload
 alias reload="source ~/.zshrc"

@@ -49,6 +49,17 @@ push message:
     git push origin main
     @echo "✅ Pushed"
 
+# Apply macOS system preferences (run after editing macos/defaults.sh)
+macos:
+    #!/usr/bin/env bash
+    set -e
+    if ! ./bin/dotsync check macos; then
+      bash macos/defaults.sh
+      ./bin/dotsync record macos
+    else
+      echo "macos defaults already up-to-date"
+    fi
+
 # Show step status and VS Code drift
 status:
     ./bin/dotsync status
