@@ -1,4 +1,1 @@
-{
-  "name": "Rust",
-  "extensions": "rust-lang.rust-analyzer vadimcn.vscode-lldb"
-}
+{"name":"Rust","extensions":"catppuccin.catppuccin-vsc eamodio.gitlens rust-lang.rust-analyzer tamasfe.even-better-toml usernamehw.errorlens vadimcn.vscode-lldb vscodevim.vim"}

@@ -60,9 +60,24 @@ gc:
 # Export current VS Code profiles back to repo (run after UI changes)
 vscode-export:
     #!/usr/bin/env bash
+    set -e
+    VSCODE_USER="$HOME/Library/Application Support/Code/User"
+    STORAGE="$VSCODE_USER/globalStorage/storage.json"
     for profile in ML Java WebDev Rust; do
-      code --profile "$profile" \
-        --export-profile "$(pwd)/vscode/profiles/$(echo "$profile" | tr '[:upper:]' '[:lower:]').code-profile"
+      location=$(jq -r --arg n "$profile" '.userDataProfiles[] | select(.name == $n) | .location' "$STORAGE")
+      if [ -z "$location" ] || [ "$location" = "null" ]; then
+        echo "⚠️  $profile: not found in VS Code storage, skipping"
+        continue
+      fi
+      ext_file="$VSCODE_USER/profiles/$location/extensions.json"
+      if [ ! -f "$ext_file" ]; then
+        echo "⚠️  $profile: extensions file missing, skipping"
+        continue
+      fi
+      extensions=$(jq -r '.[].identifier.id' "$ext_file" | tr '[:upper:]' '[:lower:]' | sort | tr '\n' ' ' | sed 's/ $//')
+      lower=$(echo "$profile" | tr '[:upper:]' '[:lower:]')
+      printf '{"name":"%s","extensions":"%s"}\n' "$profile" "$extensions" > "vscode/profiles/${lower}.code-profile"
+      echo "✓ $profile"
     done
     echo "✅ Profiles exported — review with git diff, then dots push"
 
