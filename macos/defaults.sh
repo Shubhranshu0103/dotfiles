@@ -6,6 +6,7 @@ echo "🍎 Applying macOS defaults..."
 # Key repeat (essential for vim users)
 defaults write NSGlobalDomain KeyRepeat -int 2
 defaults write NSGlobalDomain InitialKeyRepeat -int 15
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false              # For VS Code
 
 # Finder
 defaults write com.apple.finder AppleShowAllFiles -bool true

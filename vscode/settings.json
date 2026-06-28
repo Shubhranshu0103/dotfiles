@@ -1,4 +1,41 @@
 {
   "workbench.colorTheme": "Turbo C++ Dark",
-  "workbench.iconTheme": "vs-seti"
+  "workbench.iconTheme": "vs-seti",
+  "vim.easymotion": true,
+    "vim.incsearch": true,
+    "vim.useSystemClipboard": true,
+    "vim.useCtrlKeys": true,
+    "vim.hlsearch": true,
+    "vim.insertModeKeyBindings": [
+      {
+        "before": ["j", "k"],
+        "after": ["<Esc>"]
+      }
+    ],
+    "vim.normalModeKeyBindingsNonRecursive": [
+      {
+        "before": ["<leader>", "d"],
+        "after": ["d", "d"]
+      },
+      {
+        "before": ["<C-n>"],
+        "commands": [":nohl"]
+      },
+      {
+        "before": ["K"],
+        "commands": ["lineBreakInsert"],
+        "silent": true
+      }
+    ],
+    "vim.leader": "<space>",
+    "vim.handleKeys": {
+      "<C-a>": false,
+      "<C-f>": false
+    },
+    // To improve performance
+    "extensions.experimental.affinity": {
+      "vscodevim.vim": 1
+    },
+    "vim.smartRelativeLine": true,
+    "editor.lineNumbers": "relative"
 }
