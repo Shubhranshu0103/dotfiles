@@ -34,20 +34,32 @@ sync:
     fi
     echo "✅ Sync done"
 
-# Pull remote + sync + brew bundle
+# Pull remote main, rebase staging, then sync
 update:
-    @echo "⬇️  Pulling latest..."
+    #!/usr/bin/env bash
+    set -e
+    echo "⬇️  Pulling latest..."
+    git checkout main
     git pull origin main
+    if git show-ref --verify --quiet refs/heads/staging; then
+      git checkout staging
+      git rebase main
+      git checkout main
+    fi
     just sync
-    brew bundle --file=Brewfile
-    @echo "✅ Updated"
+    echo "✅ Updated"
 
-# Commit all changes and push: dots push "my message"
+# Export VS Code profiles, commit everything to staging, push for PR review: dots push "my message"
 push message:
+    #!/usr/bin/env bash
+    set -e
+    just vscode-export
+    git checkout staging 2>/dev/null || git checkout -b staging
     git add -A
     git commit -m "{{message}}"
-    git push origin main
-    @echo "✅ Pushed"
+    git push origin staging
+    git checkout main
+    echo "✅ Pushed to staging — approve the PR on GitHub to merge to main"
 
 # Apply macOS system preferences (run after editing macos/defaults.sh)
 macos:
