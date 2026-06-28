@@ -43,7 +43,7 @@ inputs = ["tmux/.tmux.conf"]
 
 [[steps]]
 name        = "vscode_profiles"
-inputs      = ["vscode/profiles/", "vscode/extensions-common.txt"]
+inputs      = ["vscode/profiles/", "vscode/extensions-common.txt", "vscode/settings.json"]
 drift_check = "vscode"
 
 [[steps]]
