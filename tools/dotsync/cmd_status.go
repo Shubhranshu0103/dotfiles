@@ -98,6 +98,7 @@ func cmdStatus(repoRoot string) error {
 // Returns a human-readable description if any profile has drifted, "" if clean.
 func checkExtensionDrift(repoRoot string) string {
 	vsCodeBase := filepath.Join(os.Getenv("HOME"), "Library/Application Support/Code/User")
+	var drifted []string
 
 	storageData, err := os.ReadFile(filepath.Join(vsCodeBase, "globalStorage/storage.json"))
 	if err != nil {
@@ -154,7 +155,7 @@ func checkExtensionDrift(repoRoot string) string {
 					}
 					sort.Strings(repoIDs)
 					if !stringSlicesEqual(liveIDs, repoIDs) {
-						return "Default profile has uncommitted extension changes"
+						drifted = append(drifted, "Default")
 					}
 				}
 			}
@@ -206,10 +207,13 @@ func checkExtensionDrift(repoRoot string) string {
 		sort.Strings(repoIDs)
 
 		if !stringSlicesEqual(liveIDs, repoIDs) {
-			return fmt.Sprintf("%s profile has uncommitted extension changes", profile)
+			drifted = append(drifted, profile)
 		}
 	}
-	return ""
+	if len(drifted) == 0 {
+		return ""
+	}
+	return strings.Join(drifted, ", ") + " profile(s) have uncommitted extension changes"
 }
 
 func stringSlicesEqual(a, b []string) bool {
