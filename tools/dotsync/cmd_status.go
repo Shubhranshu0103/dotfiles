@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 )
 
 const (
@@ -55,9 +56,13 @@ func cmdStatus(repoRoot string) error {
 					}
 				}
 			}
-			lastRun = recorded.RecordedAt
-			if len(lastRun) > 16 {
-				lastRun = lastRun[:16]
+			if t, err := time.Parse(time.RFC3339, recorded.RecordedAt); err == nil {
+				lastRun = t.Local().Format("2006-01-02T15:04")
+			} else {
+				lastRun = recorded.RecordedAt
+				if len(lastRun) > 16 {
+					lastRun = lastRun[:16]
+				}
 			}
 			commit = recorded.Commit
 		}
@@ -120,6 +125,40 @@ func checkExtensionDrift(repoRoot string) string {
 	locationByName := make(map[string]string, len(profileDefs))
 	for _, p := range profileDefs {
 		locationByName[strings.ToLower(p.Name)] = p.Location
+	}
+
+	// Check default profile (~/.vscode/extensions/extensions.json)
+	defaultExtData, err := os.ReadFile(filepath.Join(os.Getenv("HOME"), ".vscode/extensions/extensions.json"))
+	if err == nil {
+		var extList []struct {
+			Identifier struct {
+				ID string `json:"id"`
+			} `json:"identifier"`
+		}
+		if err := json.Unmarshal(defaultExtData, &extList); err == nil {
+			liveIDs := make([]string, 0, len(extList))
+			for _, e := range extList {
+				liveIDs = append(liveIDs, strings.ToLower(e.Identifier.ID))
+			}
+			sort.Strings(liveIDs)
+
+			repoData, err := os.ReadFile(filepath.Join(repoRoot, "vscode/profiles/default.code-profile"))
+			if err == nil {
+				var repoProfile struct {
+					Extensions string `json:"extensions"`
+				}
+				if err := json.Unmarshal(repoData, &repoProfile); err == nil {
+					repoIDs := make([]string, 0)
+					for _, id := range strings.Fields(repoProfile.Extensions) {
+						repoIDs = append(repoIDs, strings.ToLower(id))
+					}
+					sort.Strings(repoIDs)
+					if !stringSlicesEqual(liveIDs, repoIDs) {
+						return "Default profile has uncommitted extension changes"
+					}
+				}
+			}
+		}
 	}
 
 	for _, profile := range []string{"ML", "Java", "WebDev", "Rust"} {

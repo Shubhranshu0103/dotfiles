@@ -79,6 +79,12 @@ vscode-export:
       printf '{"name":"%s","extensions":"%s"}\n' "$profile" "$extensions" > "vscode/profiles/${lower}.code-profile"
       echo "✓ $profile"
     done
+    default_ext="$HOME/.vscode/extensions/extensions.json"
+    if [ -f "$default_ext" ]; then
+      extensions=$(jq -r '.[].identifier.id' "$default_ext" | tr '[:upper:]' '[:lower:]' | sort | tr '\n' ' ' | sed 's/ $//')
+      printf '{"name":"Default","extensions":"%s"}\n' "$extensions" > "vscode/profiles/default.code-profile"
+      echo "✓ Default"
+    fi
     ./bin/dotsync record vscode_profiles
     echo "✅ Profiles exported — review with git diff, then dots push"
 
