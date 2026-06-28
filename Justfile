@@ -13,6 +13,10 @@ build-dotsync:
 sync:
     #!/usr/bin/env bash
     set -e
+    if ! ./bin/dotsync check brew; then
+      brew bundle --file=Brewfile
+      ./bin/dotsync record brew
+    fi
     for pkg in {{PACKAGES}}; do
       if ! ./bin/dotsync check "stow_${pkg}"; then
         stow --restow --target=$HOME "$pkg"
