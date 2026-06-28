@@ -22,6 +22,7 @@ alias world="cd $WORLD"
 alias proj="cd $PROJECTS"
 
 # Git aliases
+alias gsw="git switch"
 alias gs="git status"
 alias ga="git add"
 alias gc="git commit"
