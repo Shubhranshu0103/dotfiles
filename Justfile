@@ -19,6 +19,15 @@ sync:
         ./bin/dotsync record "stow_${pkg}"
       fi
     done
+    if ! ./bin/dotsync check tpm; then
+      if [ -f "$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh" ]; then
+        TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" \
+          ~/.tmux/plugins/tpm/scripts/install_plugins.sh
+        ./bin/dotsync record tpm
+      else
+        echo "⚠️  TPM not installed — skipping plugin sync (run install.sh first)"
+      fi
+    fi
     echo "✅ Sync done"
 
 # Pull remote + sync + brew bundle
